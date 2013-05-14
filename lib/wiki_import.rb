@@ -33,22 +33,54 @@ class WikiImport < Nokogiri::XML::SAX::Document
   
   def start_document
     logger.debug "Start document"
+    
   end
   
   def end_document
     logger.debug "End document"
+    
   end
   
   def characters(c)
+    @title = c if @interested
+    @text = c if @interested
    
   end
 
   def start_element(name, attrs)
     logger.debug "Found element #{name}"
+  case name
+   when "page"
+    when "title"
+      @interested = true
+    when "text"
+      puts "----------text START----------"
+      @interested = true
+    else 
+      @interested = false
   end
+end
   
   def end_element(name)
     logger.debug "Finished element #{name}"
+    case name 
+    when "page"
+      puts "done #{name}"
+    when "title"
+    puts "saved #{@title}"
+
+    File.open("sql.txt", "a") { |f| f.write("INSERT INTO articles (title) VALUES (#{@title})\n")
+      sql << "INSERT INTO articles (title) VALUES (#{@title})"
+  
+    }
+   when "text"
+    File.open("sql.txt", "a") { |f| f.write("INSERT INTO articles (title) VALUES (#{@text})\n"
+  )
+    sql << "INSERT INTO articles (text) VALUES (#{@text})"
+    }
+  end
+
+
   end
   
   def method_missing(m, *args, &block)
@@ -68,3 +100,7 @@ class WikiImport < Nokogiri::XML::SAX::Document
     "/tmp/articles-#{@output_file_count}.sql"
   end  
 end
+
+
+
+
